@@ -33,10 +33,15 @@ credentials, and no secrets are committed to this repository.
 ```powershell
 git clone https://github.com/tumelolungilebf-rgb/ds_code_challenge.git
 cd ds_code_challenge
-py -3.12 -m venv .venv
+python --version
+python -m venv .venv
 .venv\Scripts\python.exe -m pip install -e .
 .venv\Scripts\python.exe -m yearbeyond_pipeline
 ```
+
+The version check must report Python 3.12.x. If `python` is not available on
+Windows, use `py -3.12` or the full path to a Python 3.12 executable in the
+first two commands.
 
 ### Linux or macOS
 
