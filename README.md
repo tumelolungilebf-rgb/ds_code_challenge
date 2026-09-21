@@ -1,190 +1,258 @@
+<img src="img/city_emblem.png" alt="City of Cape Town emblem" width="180"/>
 
-<img src="img/city_emblem.png" alt="City Logo"/>
+# YearBeyond Data Systems Lead technical assessment
 
-# City of Cape Town - Data Science Unit Code Challenge
+This repository is Tumelo Lungile's Data Engineering submission based on the
+[City of Cape Town Data Science Unit code challenge](https://github.com/cityofcapetown/ds_code_challenge).
+The agreed scope is limited to:
 
-## Purpose
+- Section 0: Setup
+- Section 1: Data Extraction
+- Section 2: Initial Data Transformation
 
-The purpose of this challenge is to evaluate the skills of prospective Data Scientists, Engineers, Analysts and Front End Developer for positions in the City of Cape Town's Data Science unit. 
+Sections 3-6 are outside this submission and have not been implemented.
 
-## Intended audience
+The solution extracts resolution-8 H3 polygons with AWS S3 Select, validates
+them with a graded schema contract, assigns every service request to an H3 cell,
+and checks the serialized result against the supplied reference dataset.
 
-We will only evaluate responses to this challenge from people who we have requested to complete it. Of course, you are welcome to attempt it for your own enjoyment.
+## Quick start
 
-## Way of working and expected structure of submission
-Principles of reproducible analysis and code versioning are very important to our workflow. Structuring your work to aid in reproducibility and readability is important. 
+### Requirements
 
-So, follow common conventions with respect to directory structure and names to make your work as easy to follow as possible.
+- Git
+- Python 3.12 (developed and verified with Python 3.12.14)
+- Internet access to the public challenge files in `af-south-1`
 
-## What we're looking for
-### Expectation of Effort
-We expect you to spend up to 48 calendar hours working on this assessment per position. If you are finding that you are spending significantly more time than this, then please contact whomever sent you the link to this assessment to let them know.
+A personal AWS account is not required. The pipeline downloads the challenge's
+supplied read-only dummy credentials at runtime. It does not print or save those
+credentials, and no secrets are committed to this repository.
 
-You should have received over 7 days warning that you would be undertaking this assessment. Please notify [Delyno du Toit](delyno.dutoit@capetown.gov.za) if this was not the case.
+### Windows PowerShell
 
-### Things to focus on
-Over and above the tasks specified below, there are particular aspects of each position that we would like you to pay attention to:
+```powershell
+git clone https://github.com/tumelolungilebf-rgb/ds_code_challenge.git
+cd ds_code_challenge
+py -3.12 -m venv .venv
+.venv\Scripts\python.exe -m pip install -e .
+.venv\Scripts\python.exe -m yearbeyond_pipeline
+```
 
-* Data Scientist candidates - we're looking for both good, statistical insight into problems, as well as the ability to communicate complex topics. Please make special effort to highlight what you believe to be the crux of a particular problem, as well as how your work addresses it.
-* Data Engineer candidates - as the key enablers of our unit's work, we really want to see work done in a sustainable manner: writing for easy comprehension, testing, clean code, modularity all bring us joy.
-* Data Analyst candidates - we think our analysts have done a good job when they provide insights that inform actual decisions. Hence, we want evidence of both the ability to surface these insights from data, as well as the skill to convey those insights. Your audience is intelligent, but non-specialist.
+### Linux or macOS
 
-### Candidates where programming is required (Data Scientist; Engineers, Visualisation Engineer and Front End Developers)
-Requirements and notes:
-* For Data Science and Data Engineering, our primary programming languages are `python`, `R` and `SQL`. We will accept code that is packaged in `.py`, `.ipynb`, `.R` and `.Rmd` files. Scripts in `.sql` may also be included where applicable.
-* Data Visualisation engineers and Front End Developers should have knowledge of either `python` or `R`, and relevant front-end programming languages (e.g. Javascript, HTML, CSS). We will accept code that is packaged in `.py`, `.R` and appropriate front-end programming language specific files, e.g. `.js`, `.html` etc. Furthermore, we greatly appreciate adherence to the principles and guidelines of [Single Page Applications](https://en.wikipedia.org/wiki/Single-page_application).
-* Bash or similar scripting language files are fine for glue. You may develop in any development environment you choose. 
-* We expect to be able to clone your repo, immediately identify what script to execute from your README file, and execute it to completion with no human interaction. 
-  In order to ensure that our environment has the right libraries or packages, please follow standard python (PEP8) or R guidelines for structure in your code, i.e place `import` and `library()` commands at the top of your scripts.
-* If your repo does not clone and run, we will not attempt to fix it.
-* If your analysis makes use of any external data, the data must either be included in the repo, or be downloaded automatically during script execution.
+```bash
+git clone https://github.com/tumelolungilebf-rgb/ds_code_challenge.git
+cd ds_code_challenge
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -e .
+.venv/bin/python -m yearbeyond_pipeline
+```
 
-### Candidates where programming is not required (Data Analysts)
-*Note* If you prefer, you may submit using the requirements described above.
+The final command runs Section 1 and then Section 2 without interactive input.
+It exits with status `0` only when both sections pass. Section 2 is skipped if
+Section 1 fails, because it depends on the validated grid produced by Section 1.
 
-You can use any tool to produce the output, e.g. Python, R, Excel, Power BI, Tableau, etc. The **final deliverable needs to be a pdf report** with your analysis.
+Installed console commands are also available:
 
-### Follow-on Questions
-If we invite you to an interview, after completing and submitting this technical assessment, we will be asking follow-up 
-questions about the work submitted. These questions might be at a very detailed level, or broadly conceptual, relating to 
-the choices made in completing this assessment.
+```text
+yearbeyond-pipeline   # complete Sections 1-2 pipeline
+yearbeyond-section1   # Section 1 only
+yearbeyond-section2   # Section 2 only; requires a validated local grid
+```
 
-We do not expect perfect recall of what you may have submitted, but we do expect a deep knowledge of the content, and 
-how it works.
+## Pipeline overview
 
-### Use of Generative AI and/or Coding Agents
-There is no restriction on the tools that you may use to complete this assessment. However we have tried to make the nature of this assessment within the scope of someone completing it without using AI assistance, as well as someone using them effectively.
+```mermaid
+flowchart LR
+    A[Mixed resolution GeoJSON in S3] -->|S3 Select: resolution = 8| B[Candidate H3 grid]
+    B --> C[Schema score and critical gates]
+    R1[Supplied level-8 grid] --> D[Feature comparison]
+    C --> D
+    D -->|pass| E[Validated Section 1 grid]
+    S[Service requests in S3] --> F[Streaming coordinate-to-H3 assignment]
+    E --> F
+    F --> G[Threshold and serialized-file validation]
+    R2[Supplied service-request reference] --> G
+    G -->|pass| H[Published sr_hex.csv.gz]
+```
 
-If you do make use of Generative AI/Coding Agents, please include an `AI_log.md` where you log all of the work that you asked AI assistance to undertake, including any prompts, the model used as well number of tokens. It will be of considerable advantage if you can highlight or document at least one instance where the AI undertook work that you then corrected or improved upon.
+Both sections write to temporary files and publish final artifacts only after
+their required validations pass. A failed run preserves any previous successful
+output and returns a nonzero exit status.
 
-## How to submit
-### Candidates where programming is required (Data Scientist;  Engineers, Visualisation Engineers and Front End Developers)
-1. Clone this repository and load it into your development environment. 
-2. Work the challenge, committing regularly to document your progress. Try have structured, meaningful commits, where each one adds significant functionality in a coherent manner.
-3. Host your repository somewhere that is publicly accessible. If you're using GitHub, please use a fork of our original repository.
-4. Inform us via email that your challenge is complete, including a link to your repo. Be sure to make sure it is set to public.
+## Section 1: data extraction
 
-**Be sure to 'watch' this repo for changes - we may push bugfixes**
+The pipeline executes this S3 Select query against
+`city-hex-polygons-8-10.geojson`:
 
-NOTE: If you would like to _improve_ the content of this repository, by fixing typos or perhaps enhancing the challenge, please do so by submitting a pull request.
+```sql
+SELECT *
+FROM S3Object[*].features[*] AS s
+WHERE s.properties.resolution = 8
+```
 
-### Candidates where programming is not required (Data Analysts)
-*NB* If you prefer, you may submit using the workflow described above.
+Validation uses the standalone contract in
+[`config/h3_level8_schema.json`](config/h3_level8_schema.json). Six equally
+weighted rules produce a non-binary conformance score. The required score is
+99.5%, with separate critical gates for structure, H3 validity, resolution and
+polygon geometry. Passing the score cannot hide a critical failure.
 
-1. Download this repository using the Code -> `Download ZIP` option in the top right-hand corner.
-2. Add your work into this folder.
-3. Create a compressed archive file with all of your work in it.
-4. Send us an email, with your archived project attached. If it is larger than 10 MB, then share it via a cloud storage service such as DropBox, and include the link in your email. 
+The extracted features are also compared by H3 index with
+`city-hex-polygons-8.geojson`. This detects missing, extra, duplicate and changed
+features without relying on feature order.
 
-## Challenge
-Follow the below steps, completing those indicated as relevant to the positions for which you are interviewing. If there are any steps that you can not complete after a reasonable amount of effort, rather move on to later steps, attempting everything relevant at least once.
+Verified live result:
 
-For all roles, we expect the challenge response to include what you consider to be role-appropriate testing and validation. For example, a Data Scientist might want to include MAPE scores or confusion matrices. A Data Engineer may want to include logging and data quality validation tests, as well as unit and even integration tests. A Data Analyst might want to plot histograms of the data in question to ensure that outliers aren't overwhelming your analysis.
+| Measure | Result |
+| --- | ---: |
+| Resolution-8 features | 3,832 |
+| Schema checks passed | 22,992 / 22,992 |
+| Conformance score | 100% |
+| Critical failures | 0 |
+| Missing, extra or changed reference features | 0 |
+| Bytes scanned by S3 Select | 108,254,980 |
+| Bytes returned | 2,011,878 |
+| Latest unified-run Section 1 time | 3.701 seconds |
 
-Your code should be well formatted according to generally accepted style guides and include whatever is necessary for a team-mate unfamiliar with it to maintain it.
+The output GeoJSON was reproduced with SHA-256:
 
-### 0. Setup
-#### Data
-We have made the following datasets available (each filename is a link). These are all available in an AWS bucket `cct-ds-code-challenge-input-data`, in the `af-south-1` region, with the object name being the filenames below):
-* [`sr.csv.gz`](https://cct-ds-code-challenge-input-data.s3.af-south-1.amazonaws.com/sr.csv.gz) contains 12 months of service request data, where each row is a service request. A service request is a request from one of the residents of the City of Cape Town to undertake significant work. This is an important source of information on service delivery, and our performance thereof. *Note* as indicated by the extension, this file is compressed.
-* [`sr_hex.csv.gz`](https://cct-ds-code-challenge-input-data.s3.af-south-1.amazonaws.com/sr_hex.csv.gz) contains the same data as `sr.csv` as well as a column `h3_level8_index`, which contains the appropriate resolution level 8 H3 index for that request. If the request doesn't have a valid geolocation, the index value will be `0`. *Note* as indicated by the extension, this file is compressed.
-* [`sr_hex_truncated.csv`](https://cct-ds-code-challenge-input-data.s3.af-south-1.amazonaws.com/sr_hex_truncated.csv) is a truncated version of `sr_hex.csv`, containing only 3 months of data.
-* [`city-hex-polygons-8.geojson`](https://cct-ds-code-challenge-input-data.s3.af-south-1.amazonaws.com/city-hex-polygons-8.geojson) contains the [H3 spatial indexing system](https://h3geo.org/) polygons and index values for the bounds of the City of Cape Town, at resolution level 8.
-* [`city-hex-polygons-8-10.geojson`](https://cct-ds-code-challenge-input-data.s3.af-south-1.amazonaws.com/city-hex-polygons-8-10.geojson) contains the [H3 spatial indexing system](https://h3geo.org/) polygons and index values for resolution levels 8, 9 and 10, for the City of Cape Town.
-* `swimming-pool-labels` (`s3://cct-ds-code-challenge-input-data.s3.af-south-1.amazonaws.com/images/swimming-pool`) contains a random sample of aerial images from Cape Town, organised into two prefixes, `yes` or `no`, corresponding to whether there is a swimming pool in the image. Within each label prefix, there is a manifest file listing all the images available, i.e. [yes](https://cct-ds-code-challenge-input-data.s3.af-south-1.amazonaws.com/images/swimming-pool/yes/manifest) and [no](https://cct-ds-code-challenge-input-data.s3.af-south-1.amazonaws.com/images/swimming-pool/no/manifest).
+```text
+83c8a05b4f9b3528892ee75968b01f4fd4986f4bfc0e1c06d2f382b8671e489b
+```
 
-In some of the tasks below you will be creating datasets that are similar to these, feel free to use the provided files to validate your work.
+Detailed rationale and evidence are in
+[`docs/section1_design.md`](docs/section1_design.md) and
+[`docs/section1_results.md`](docs/section1_results.md).
 
-#### Dummy AWS Credentials
-We have made AWS credentials available in the following file, with the appropriate permissions set, [here](https://cct-ds-code-challenge-input-data.s3.af-south-1.amazonaws.com/ds_code_challenge_creds.json).
+## Section 2: initial transformation
 
-*Note* These creds don't have any special access, other than what is already set on these resources for anonymous access. These are more provided to make using the various AWS client libraries easier.
+The transformation streams `sr.csv.gz`; it does not load 941,634 row
+dictionaries into a dataframe. For each row it:
 
-### 1. Data Extraction (if applying for a Data Engineering Position)
-Use the [AWS S3 SELECT](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-glacier-select-sql-reference-select.html) command to read in the H3 resolution 8 data from `city-hex-polygons-8-10.geojson`. Use the `city-hex-polygons-8.geojson` file to validate your work.
+1. Preserves the 15 named source fields as text and in source order.
+2. Assigns `0` when either coordinate is empty.
+3. Rejects nonnumeric, nonfinite or out-of-range nonempty coordinates.
+4. Calculates the resolution-8 address with
+   `h3.latlng_to_cell(latitude, longitude, 8)`.
+5. Checks membership in the validated Section 1 grid.
+6. Derives and separately audits a valid H3 cell missing from that supplied
+   grid, while keeping the original grid failure visible.
+7. Reopens the temporary gzip and compares every serialized field and row with
+   `sr_hex.csv.gz` before publication.
 
-Please also add an additional validation that checks conformance to a reasonable schema for the dataset. The output of this validation should be a conformance "score" of some sort, with a non-binary threshold of your choice. Explicitly capture the desired schema used to compute this conformance score in a standalone configuration or documentation file.
+The supplied grid omits two valid H3 cells used by three requests. The pipeline
+discovers these cells dynamically, derives their boundaries using the pinned H3
+library, and writes them to a supplemental audit artifact. It never copies the
+answer from the reference dataset and does not modify the Section 1 grid.
 
-Please log the time taken to perform the operations described as well as the validation steps, and within reason, try to optimise latency and computational resources used. Please also note the comments above about the nature of the code that we expect.
+### Join error policy
 
-### 2. Initial Data Transformation (if applying for a Data Engineering, Visualisation Engineer, Front End Developer and/or Science Position)
-Join the equivalent of the contents of the file `city-hex-polygons-8.geojson` to the service request dataset, such that each service request is assigned to a single H3 resolution level 8 hexagon. Use the `sr_hex.csv.gz` file to validate your work.
+The standalone policy is
+[`config/section2_policy.json`](config/section2_policy.json).
 
-For any requests where the `Latitude` and `Longitude` fields are empty, set the index value to `0`. Use your judgement to include any other appropriate validation.
+| Gate | Calculation | Maximum | Observed |
+| --- | --- | ---: | ---: |
+| Original-grid unjoined | missing + invalid + outside-grid rows / all rows | 25% | 22.553030% |
+| Unexpected join error | invalid + outside-grid rows / nonmissing rows | 0.001% | 0.000411% |
 
-Include logging that lets the executor know how many of the records failed to join, and include a join error threshold above which the script will error out. Please motivate why you have selected the error threshold that you have. Please also log the time taken to perform the operations described, and within reason, try to optimise latency and computational resources used.
+The 25% gate allows the measured missing-location rate while detecting a large
+increase or broken column mapping. The 0.001% gate permits at most seven
+unexpected rows at the observed eligible-row count; eight would fail. Any
+malformed coordinate fails independently, even below these percentage limits.
+Reference H3 differences also have a separate zero-tolerance gate.
 
-### 3. Descriptive Analytic Tasks (if applying for a Data Analyst Position)
-*Note:* We are most interested in how you reason about the problem.
+Verified live result:
 
-Please use the `sr_hex_truncated.csv` dataset to address the following.
+| Measure | Result |
+| --- | ---: |
+| Source and serialized reference rows | 941,634 each |
+| Missing coordinate pairs assigned `0` | 212,364 |
+| Usable coordinate pairs | 729,270 |
+| Requests in the original grid | 729,267 |
+| Outside-grid requests recovered | 3 |
+| Identity, H3, shared-field or length mismatches | 0 |
+| Latest unified-run Section 2 time | 59.300 seconds |
 
-Please provide the following:
-1. An answer to the question "In which 3 suburbs should the Urban Waste Management directorate concentrate their infrastructure improvement efforts?". Please motivate how you related the data provided to infrastructure issues.
-2. An answer to the questions:
-    1. Focusing on the Urban Waste Management directorate - "What is the median & 80th percentile time to complete each service request across the City?" (each row represent a service request).
-    2. Focusing on the Urban Waste Management directorate - "What is the median & 80th percentile time to complete each service request for the 3 suburbs identified in (1)?" (each row represent a service request).
-    3. "Is there any significant differences in the median and 80th percentile completion times between the City as a whole and the 3 suburbs identified in(1)?".  Please elaborate on the similarities or differences.
-3. Provide a visual mock of a dashboard for the purpose of monitoring progress in applying the insights developed in (1) & (2). It should focus the user on performance pain points. Add a note for each visual element, explaining how it helps fulfill this overall function. Please also provide a brief explanation as to how the data provided would be used to realise what is contained in your mock.
-4. Identify value-adding insights for the management of Urban Waste Management, from the dataset provided, in regard to waste collection within the City.
- 
-The **final deliverable** is a report (in PDF form) for the Executive Management team of the City.  An Executive-level, non-specialist should be able to read the report and follow your analysis without guidance.
+Two complete standalone runs produced the same gzip SHA-256:
 
-### 4. Predictive Analytic Tasks (if applying for a Data Science Position)
+```text
+2724a0eea1007a5e16fd0a8037a95ffedb76e94735d768b4d4a1fd51635fabd0
+```
 
-Please choose __one__ of the following four tasks to solve:  (for the tasks you choose to solve, we expect you to provide (1) an initial solution and (2) an improved solution of your initial solution. For both we expect the code together with evidence or images of training or inference results, e.g. metrics, loss graph, output logs from hyperparameter tuning, confusion matrixs, etc)
+Detailed rationale, exploratory evidence and production results are in
+[`docs/section2_design.md`](docs/section2_design.md),
+[`docs/section2_probe.json`](docs/section2_probe.json) and
+[`docs/section2_results.md`](docs/section2_results.md).
 
-1. *Time series challenge*: Predict the weekly number of expected service requests per hex that will be created each week using `sr_hex.csv`, for 4 weeks past the end of the dataset.
-2. *Introspection challenge*: (using `sr_hex.csv`)    
-   2.1. Reshape the data into number of requests created, per type, per H3 level 8 hex in the last 12 months.  
-   2.2. Choose a type, and then develop a model that predicts the number of requests of that type per hex.   
-   2.3. Use the model developed in (2.2) to predict the number in (2.1).   
-   2.4. Based upon the model, and any other analysis, determine the drivers of requests of that particular type(s).   
-3. *Classification challenge*: Classify a hex in `sr_hex.csv` as sparsely or densely populated, solely based on the service request data. Provide an explanation as to how you're using the data to perform this classification. Using your classifier, please highlight any unexpected or unusual classifications, and comment on why that might be the case.
-4. *Anomaly Detection challenge*: Reshape the `sr_hex.csv` data into the number of requests created per department, per day. Please identify any days in the first 6 months of 2020 where an anomalous number of requests were created for a particular department. Please describe how you would motivate to the director of that department why they should investigate that anomaly. Your argument should rely upon the contents of the dataset and/or your anomaly detection model.
+## Generated outputs and logging
 
-Item/Task 5 must be solved:  (we expect you to provide (1) an initial solution and (2) an improved solution of your initial solution. For both we expect the code together with evidence or images of training or inference results, e.g. metrics, loss graph, output logs from hyperparameter tuning, confusion matrixs, etc)
+Generated data and logs are excluded from Git because they are reproducible
+from the public inputs.
 
-5. *Computer Vision classification challenge*: Use a sample of images from the `swimming-pool` dataset to develop a model that classifies whether an image contains a swimming pool or not. Use the provided labels to validate your model.
+| Path | Purpose |
+| --- | --- |
+| `data/processed/city-hex-polygons-8.geojson` | Validated Section 1 grid |
+| `data/processed/sr_hex.csv.gz` | Validated Section 2 service requests |
+| `outputs/section1_validation.json` | Schema, reference, source and timing evidence |
+| `outputs/section2_validation.json` | Join, threshold, reference, hash and timing evidence |
+| `outputs/section2_supplemental_cells.geojson` | Audited grid coverage gaps |
+| `outputs/pipeline_summary.json` | Overall status and links between stage runs |
+| `outputs/pipeline.log` | Structured JSON event log |
 
-Feel free to use any other data you can find in the public domain, except for tasks (3) and (5).
+Logs contain UTC timestamps, stage durations, aggregate counts, thresholds,
+source object metadata and output hashes. They exclude credentials, raw service
+request rows and notification identifiers.
 
-**The final output of the execution of your code should be a self-contained `html` file or executed `ipynb` file that is your report.** 
- 
-A statistically minded layperson should be able to read this report and follow your analysis without guidance. In the 
-report there should be evidence of any model training done (e.g. loss graph, output logs from hyperparameter tuning), 
-along with quantitative measures or predictions of the quality of any models developed. We also expect to see some 
-process commentary, describing the quality of any initial results, refinements made, and the resulting improvement.
+## Testing
 
-Please also log the time taken to perform the operations described, and within reason, try to optimise latency and computation resources used. Please also note the comments above with respect to the nature of work that we expect from data scientists.
+Run the full test suite after installation:
 
-### 5. Further Data Transformations (if applying for a Data Engineering Position)
-1. Create a subsample of the data by selecting all of the requests in `sr_hex.csv.gz` which are within 1 minute of the centroid of an official suburb in the proximity of Atlantis in the North of the City of Cape Town's bounds. You may determine the centroid of the suburb by the **computational** method of your choice (i.e. do not just hard code the value), but if any external data is used, your code should programmatically download and perform the centroid calculation. Please clearly document your method.
+```powershell
+.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
 
-2. Augment your filtered subsample of `sr_hex.csv.gz` from (1) with the appropriate [wind direction and speed data for 2020](https://www.capetown.gov.za/_layouts/OpenDataPortalHandler/DownloadHandler.ashx?DocumentName=Wind_direction_and_speed_2020.ods&DatasetDocument=https%3A%2F%2Fcityapps.capetown.gov.za%2Fsites%2Fopendatacatalog%2FDocuments%2FWind%2FWind_direction_and_speed_2020.ods) from the Atlantis Air Quality Measurement site, from when the notification was created. All of the steps for downloading and preparing the wind data, as well as the join should be performed programmatically within your script. This endpoint can be unreliable - please add an appropriate strategy for handling this, with commentary for why you chose this approach for handling an unreliable dependency.
+On Linux or macOS, replace `.venv\Scripts\python.exe` with
+`.venv/bin/python`.
 
-3. Write a script which anonymises your augmented subsample from (2), but preserves the following precisions (You may use H3 indice or lat/lon coordinates for your spatial data):
-   * location accuracy to within approximately 500m
-   * temporal accuracy to within 6 hours
-   * Any records or columns which you believe could lead to the resident who made the request being identified despite the restrictions made above. For the records removed, make provision for a separate review by a person to anonymise the data by hand.
-We expect in the accompanying report that you will justify as to why this data is now anonymised. Please limit this commentary to less than 500 words. If your code is written in a code notebook such as Jupyter notebook or Rmarkdown, you can include this commentary in your notebook.
+The current suite contains 32 tests covering S3 event-stream handling, schema
+score boundaries, critical validation gates, reference differences, coordinate
+categories, H3 assignments, join threshold boundaries, deterministic gzip
+serialization, safe publication and full-pipeline orchestration. Tests use
+small synthetic data; full supplied datasets are used for live validation.
 
-### 6. Data Visualisation Task (if applying for a Data Visualisation Engineering or Front End Developer Position)
+## Reproducibility choices
 
-Using the [`sr_hex.csv.gz`](https://cct-ds-code-challenge-input-data.s3.af-south-1.amazonaws.com/sr_hex.csv.gz) dataset and open source front-end web technologies (html, css, javascript, etc), develop a data visualisation / dashboard that help to answer the question:
+- `.python-version` records Python 3.12.14; `pyproject.toml` restricts execution
+  to Python 3.12 and pins direct runtime dependencies.
+- External inputs and challenge credentials are retrieved programmatically.
+- Source size, ETag and last-modified metadata are checked before and after each
+  live stage to detect a source changing during execution.
+- GeoJSON features are sorted before deterministic JSON serialization.
+- CSV output uses stable row order and gzip metadata for byte-for-byte repeat
+  output with unchanged sources and dependency versions.
+- Standalone JSON configuration files separate validation policy from code.
+- Generated datasets, logs, environments and secrets are excluded by
+  [`.gitignore`](.gitignore).
 
-*"In which suburbs should the Water and Sanitation directorate concentrate their infrastructure improvement efforts?".*
+The latest unified live run passed both sections in 63.567 seconds. Timing is
+reported as evidence of that run, not as a general performance benchmark.
 
-The data visualisation / dashboard must include the following:
+## Project structure
 
-1. A chart (plot) or charts (plots) that helps to answer the above question.
-2. A minimalist cartographic map with identifiable landmark features (e.g. major roads, railways, etc.) and some representation of the data.
-3. Make (1) and (2) interactive in some manner, so as to allow users to explore the data and uncover insights. The following example [Map with "range" sliders](https://observablehq.com/d/a040753103477386) demostrates an interactive map. However, you're not limited to this example – feel free to explore other interactive approaches.
-4. Data Storytelling: in a separate markdown document, titled `data-driven-storytelling.md`, provide a brief, step-by-step, point form description of how your visualisations (and information from the dataset) outline a data-driven story that answers the above question. 
-5. Design Principles: In a separate markdown document, titled `visualisation-design-choices.md`, please provide a brief, point form explanation for why you have chosen certain colours (e.g. for legends), fonts, the layout or anything else that will help us understand your thinking in designing the data visualisation / dashboard to answer the question. 
-6. Publish your work using an online service such as https://pages.github.com/ or any other means you are familiar with.  Anyone with an Internet connection and a modern browser such as Google Chrome, Mozilla Firefox or Microsoft Edge, should be able to see the end product and interact with it. Please reference the published link to your visualisation tool in the `README.md` of your repository.
+```text
+config/                       validation contracts and thresholds
+docs/                         design decisions and measured results
+scripts/                      source-access and exploratory inspection tools
+src/yearbeyond_pipeline/      installable extraction/transformation package
+tests/                        standard-library unittest suite
+AI_log.md                     required record of AI-assisted work
+pyproject.toml                package metadata, commands and dependencies
+```
 
-Please also note the comments above about the nature of the code that we expect.
+AI assistance is disclosed in [`AI_log.md`](AI_log.md), including prompts,
+models, validation, user corrections and assistant corrections. Exact token
+counts were unavailable in the interface and are identified as unavailable
+rather than estimated.
 
-## Contact
-You can contact gordon.inggs, muhammed.ockards, kathryn.mcdermott and/or colinscott.anthony @ capetown.gov.za for any questions on the above.
+The original challenge statement and Sections 3-6 remain available in the
+[upstream repository](https://github.com/cityofcapetown/ds_code_challenge).

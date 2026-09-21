@@ -183,3 +183,21 @@ the README's request to include token counts.
   run passed in 63.567 seconds. Existing verified output hashes were unchanged.
 - Corrections: None during this task.
 - Tokens: Exact session count unavailable; not estimated.
+
+## 21 September 2026 - reviewer-ready README
+
+- Model/tool: GPT-5.6 Sol High in Codex; Airtable plugin.
+- Prompt: "okay lets do that now". Context: proceed with the planned README
+  rewrite after completing the reproducible pipeline command.
+- Use: Replaced the upstream challenge text with a submission-focused guide for
+  Sections 0-2. Added Windows and POSIX setup commands, the no-AWS-account
+  explanation, a pipeline diagram, validation policies, measured results,
+  generated outputs, logging, tests, reproducibility choices, project structure
+  and links to detailed design evidence.
+- Validation: Checked every relative Markdown link against the repository,
+  verified there were no missing targets, checked whitespace and reviewed the
+  complete diff against the original challenge README.
+- Assistant correction: A first shell check for Markdown fence count allowed
+  PowerShell to interpret backticks. It was replaced with a literal-safe pattern;
+  the README content itself was unaffected.
+- Tokens: Exact session count unavailable; not estimated.
