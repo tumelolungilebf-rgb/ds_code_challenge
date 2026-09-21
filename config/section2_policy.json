@@ -1,0 +1,46 @@
+{
+  "policy_version": 1,
+  "resolution": 8,
+  "method": "coordinate_to_h3_then_left_join_to_validated_grid",
+  "latitude_field": "latitude",
+  "longitude_field": "longitude",
+  "row_identity_field": "notification_number",
+  "output_index_field": "h3_level8_index",
+  "missing_coordinate_index": "0",
+  "missing_coordinate_rule": "Either coordinate is empty after trimming whitespace",
+  "invalid_coordinate_policy": "Record category and fail the run; never publish malformed/nonfinite/out-of-range coordinates as successful joins",
+  "unnamed_column_policy": "Omit only after verifying the complete column equals the zero-based input row sequence",
+  "preserve_source_row_order": true,
+  "preserve_named_field_values_as_text": true,
+  "require_unique_nonempty_row_identity": true,
+  "require_nonempty_input_and_usable_coordinates": true,
+  "original_grid_unjoined_rate": {
+    "numerator": "missing_coordinates + invalid_coordinates + usable_outside_original_grid",
+    "denominator": "all_source_rows",
+    "maximum_fraction": 0.25,
+    "failure_condition": "rate strictly greater than maximum_fraction before rounding"
+  },
+  "unexpected_join_error_rate": {
+    "numerator": "invalid_coordinates + usable_outside_original_grid",
+    "denominator": "rows_with_both_coordinates_nonempty",
+    "maximum_fraction": 0.00001,
+    "failure_condition": "rate strictly greater than maximum_fraction before rounding"
+  },
+  "coverage_gap_policy": {
+    "action": "Derive the missing cell geometry with h3.cell_to_boundary, join to a separately recorded supplemental grid, and retain the calculated index",
+    "requires_thresholds_pass": true,
+    "source_for_assignment": "source coordinates only; never copy from the reference",
+    "include_in_original_join_error_counts": true,
+    "mutate_section1_grid": false,
+    "audit_output": "outputs/section2_supplemental_cells.geojson"
+  },
+  "reference_validation": {
+    "object": "sr_hex.csv.gz",
+    "method": "aligned streaming comparison with identity and all shared named source fields checked per row",
+    "allowed_unpaired_rows": 0,
+    "allowed_identity_mismatches": 0,
+    "allowed_shared_value_mismatches": 0,
+    "allowed_h3_mismatches": 0,
+    "on_reordered_reference": "fail with an alignment error; do not silently compare unrelated rows"
+  }
+}

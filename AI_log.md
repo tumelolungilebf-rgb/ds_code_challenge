@@ -119,3 +119,27 @@ the README's request to include token counts.
   100%, matched the reference with zero differences and produced the same
   SHA-256 output hash.
 - Tokens: Unavailable from the Codex interface; not estimated.
+
+## 21 September 2026 - Section 2 evidence and Astra design review
+
+- Model/tool: GPT-6 Astra in Codex; Airtable plugin and official H3 documentation.
+- Prompts: "on to the next task." and "I have switched to Astra."
+- Use: Added `scripts/inspect_section2.py`, its aggregate report
+  `docs/section2_probe.json`, `config/section2_policy.json`, and
+  `docs/section2_design.md`. Streamed all 941,634 source/reference rows and
+  compared all 15 shared fields, row identity, calculated H3 indices and grid
+  membership. Confirmed source notification uniqueness and the unnamed export
+  index sequence. Compared all 3,832 grid boundaries with the H3 library.
+- Finding and assistant correction: A candidate strict grid lookup would
+  produce three reference mismatches. The measured evidence showed three
+  requests belong to two valid H3 cells missing from the supplied grid.
+  The design was revised to retain calculated indices through a documented
+  supplemental-cell fallback, keep original failure counts visible, and enforce
+  explicit total/unexpected failure thresholds plus exact reference agreement.
+  This was an assistant-led investigation, not a user correction.
+- Validation: Synthetic checks covered seven coordinate cases and four boundary
+  comparisons. The full scan and follow-up coverage-gap scan both found zero
+  direct H3/reference mismatches, zero shared-field mismatches and three grid
+  membership gaps. The policy JSON and boundary arithmetic were checked locally.
+  Production Section 2 transformation and regression tests remain pending.
+- Tokens: Exact session count unavailable; not estimated.
