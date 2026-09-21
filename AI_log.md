@@ -11,7 +11,15 @@ copied as recorded; exact model versions were not independently verified.
 Exact per-session token counts were not exposed or captured. They are marked
 unavailable rather than guessed; recover them from a reliable usage export
 before submission if one becomes available. This remains a limitation against
-the README's request to include token counts.
+the upstream challenge's request to include token counts.
+
+Usage summary: AI assistance was extensive throughout this assessment. The 15
+logged phases below cover planning, environment setup, source inspection,
+design, implementation, tests, documentation and review. AI drafted most of
+the implementation and test code and ran the recorded verification steps.
+These phases are a description of usage, not a claim about the number of
+messages or tokens. User-led corrections include the Airtable plugin workflow
+and the manually applied Windows README wording correction recorded below.
 
 ## 18 September 2026 - initial review and work tracking
 
@@ -246,7 +254,8 @@ Usage: One final repository review and submission-audit session. Exact token cou
   user edits. Added explicit CSV header and row-width validation after finding
   that extra CSV fields could be ignored by the reference comparator.
 - Validation: Two new regression tests reproduced the validation gap before
-  the fix. All 34 tests passed after the fix. A fresh-clone live verification
-  of the reviewed code will be recorded with the final results.
+  the fix. A fresh clone of `185b76e` installed successfully, passed all 34 tests
+  and completed both live sections in 66.779 seconds with unchanged output
+  hashes and zero reference mismatches. See `docs/final_review.md`.
 - Usage: One technical review and correction session. Exact token count
   unavailable; not estimated.

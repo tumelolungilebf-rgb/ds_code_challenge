@@ -1,8 +1,9 @@
 # Section 2: measured join design
 
-Status: design and exploratory evidence completed on 21 September 2026.
-Production transformation, output validation, failure handling and regression
-tests are the next implementation task. Scope remains Sections 0-2.
+Historical design and exploratory checkpoint, 21 September 2026. Future-tense
+statements below describe the plan before implementation. Production work is
+now complete; see [verified results](section2_results.md) and the
+[final review](final_review.md). Scope remains Sections 0-2.
 
 ## Requirement
 

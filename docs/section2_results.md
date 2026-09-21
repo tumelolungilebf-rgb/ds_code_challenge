@@ -65,7 +65,7 @@ Two complete live runs produced the same output SHA-256:
 | 1 | 56.849 s | 26.449 s | 85.420 s |
 | 2 | 57.723 s | 25.086 s | 86.592 s |
 
-The second run is the current local report. Its run ID is
+The second run was the report at this implementation checkpoint. Its run ID is
 `159fc701-e444-4e72-a258-d3091742e7d0`.
 
 ## Test evidence

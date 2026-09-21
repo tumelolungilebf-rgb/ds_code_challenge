@@ -1,7 +1,9 @@
 # Section 1: extraction and validation design
 
-Status: design checkpoint, 21 September 2026. Extraction and validation code
-have not yet been implemented. Scope remains Sections 0, 1 and 2 only.
+Historical design checkpoint, 21 September 2026. Future-tense statements below
+describe the plan before implementation. Implementation is now complete; see
+[verified results](section1_results.md) and the [final review](final_review.md).
+Scope remains Sections 0, 1 and 2 only.
 
 ## Purpose and evidence
 

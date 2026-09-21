@@ -119,7 +119,7 @@ Verified live result:
 | Missing, extra or changed reference features | 0 |
 | Bytes scanned by S3 Select | 108,254,980 |
 | Bytes returned | 2,011,878 |
-| Initial clean-clone Section 1 time | 3.841 seconds |
+| Final-review clean-clone Section 1 time | 4.138 seconds |
 
 The output GeoJSON was reproduced with SHA-256:
 
@@ -178,7 +178,7 @@ Verified live result:
 | Requests in the original grid | 729,267 |
 | Outside-grid requests recovered | 3 |
 | Identity, H3, shared-field or length mismatches | 0 |
-| Initial clean-clone Section 2 time | 61.182 seconds |
+| Final-review clean-clone Section 2 time | 62.070 seconds |
 
 Two complete standalone runs produced the same gzip SHA-256:
 
@@ -242,10 +242,11 @@ for live validation.
 - Generated datasets, logs, environments and secrets are excluded by
   [`.gitignore`](.gitignore).
 
-The clean-clone unified run passed both sections in 65.552 seconds. Timing is
-reported as evidence of that run, not as a general performance benchmark. The
-complete check is recorded in
-[`docs/clean_clone_verification.md`](docs/clean_clone_verification.md).
+The final-review clean-clone run passed both sections in 66.779 seconds. Timing
+is evidence of that run, not a general performance benchmark. The initial run
+is recorded in [`docs/clean_clone_verification.md`](docs/clean_clone_verification.md);
+the reviewed code, repeat verification and practical limits are recorded in
+[`docs/final_review.md`](docs/final_review.md).
 
 ## Project structure
 
