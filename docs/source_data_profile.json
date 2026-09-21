@@ -1,0 +1,402 @@
+{
+  "bucket": "cct-ds-code-challenge-input-data",
+  "level_8_geojson": {
+    "bounding_box": [
+      18.297880185946518,
+      -34.364850959417296,
+      19.01255416607902,
+      -33.46401329281804
+    ],
+    "feature_count": 3832,
+    "feature_values_included": false,
+    "geometry_type_counts": {
+      "Polygon": 3832
+    },
+    "object_key": "city-hex-polygons-8.geojson",
+    "property_profiles": [
+      {
+        "name": "centroid_lat",
+        "null_count": 0,
+        "observed_json_types": {
+          "number": 3832
+        },
+        "unique_non_null_count": 3832
+      },
+      {
+        "name": "centroid_lon",
+        "null_count": 0,
+        "observed_json_types": {
+          "number": 3832
+        },
+        "unique_non_null_count": 3832
+      },
+      {
+        "name": "index",
+        "null_count": 0,
+        "observed_json_types": {
+          "string": 3832
+        },
+        "unique_non_null_count": 3832
+      }
+    ],
+    "size_bytes": 1966685,
+    "top_level_type": "FeatureCollection"
+  },
+  "mixed_resolution_geojson": {
+    "feature_count": 203840,
+    "feature_keys": [
+      "geometry",
+      "properties",
+      "type"
+    ],
+    "feature_values_included": false,
+    "inspection_method": "S3 Select",
+    "object_key": "city-hex-polygons-8-10.geojson",
+    "property_profiles": [
+      {
+        "name": "centroid_lat",
+        "sample_json_type": "number"
+      },
+      {
+        "name": "centroid_lon",
+        "sample_json_type": "number"
+      },
+      {
+        "name": "index",
+        "sample_json_type": "string"
+      },
+      {
+        "name": "resolution",
+        "sample_json_type": "integer"
+      }
+    ],
+    "resolution_counts": {
+      "10": 174531,
+      "8": 3832,
+      "9": 25477
+    },
+    "resolution_field": "resolution",
+    "sample_geometry_type": "Polygon",
+    "size_bytes": 108254980
+  },
+  "purpose": "Privacy-safe source profile for challenge Sections 0-2",
+  "region": "af-south-1",
+  "service_request_comparison": {
+    "columns_only_in_sr": [
+      ""
+    ],
+    "columns_only_in_sr_hex": [
+      "h3_level8_index"
+    ],
+    "row_counts_match": true
+  },
+  "service_request_files": [
+    {
+      "column_count": 16,
+      "column_profiles": [
+        {
+          "inferred_storage_type": "integer",
+          "maximum_text_length": 6,
+          "name": "",
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        {
+          "inferred_storage_type": "integer",
+          "maximum_text_length": 12,
+          "name": "notification_number",
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        {
+          "inferred_storage_type": "integer",
+          "maximum_text_length": 12,
+          "name": "reference_number",
+          "null_count": 348714,
+          "null_percentage": 37.0329
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 25,
+          "name": "creation_timestamp",
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 25,
+          "name": "completion_timestamp",
+          "null_count": 12192,
+          "null_percentage": 1.2948
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 32,
+          "name": "directorate",
+          "null_count": 9435,
+          "null_percentage": 1.002
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 61,
+          "name": "department",
+          "null_count": 9454,
+          "null_percentage": 1.004
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 40,
+          "name": "branch",
+          "null_count": 28401,
+          "null_percentage": 3.0161
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 54,
+          "name": "section",
+          "null_count": 93125,
+          "null_percentage": 9.8897
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 40,
+          "name": "code_group",
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 40,
+          "name": "code",
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 33,
+          "name": "cause_code_group",
+          "null_count": 810517,
+          "null_percentage": 86.0756
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 40,
+          "name": "cause_code",
+          "null_count": 811965,
+          "null_percentage": 86.2294
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 32,
+          "name": "official_suburb",
+          "null_count": 212413,
+          "null_percentage": 22.5579
+        },
+        {
+          "inferred_storage_type": "number",
+          "maximum_text_length": 19,
+          "name": "latitude",
+          "null_count": 212364,
+          "null_percentage": 22.5527
+        },
+        {
+          "inferred_storage_type": "number",
+          "maximum_text_length": 18,
+          "name": "longitude",
+          "null_count": 212364,
+          "null_percentage": 22.5527
+        }
+      ],
+      "columns": [
+        "",
+        "notification_number",
+        "reference_number",
+        "creation_timestamp",
+        "completion_timestamp",
+        "directorate",
+        "department",
+        "branch",
+        "section",
+        "code_group",
+        "code",
+        "cause_code_group",
+        "cause_code",
+        "official_suburb",
+        "latitude",
+        "longitude"
+      ],
+      "compressed_size_bytes": 37183035,
+      "coordinate_columns": {
+        "latitude": "latitude",
+        "longitude": "longitude"
+      },
+      "coordinates": {
+        "invalid_or_missing_pairs": 212364,
+        "latitude_max": -33.49232817,
+        "latitude_min": -34.348814637483,
+        "longitude_max": 18.96053944,
+        "longitude_min": 18.319446502448,
+        "valid_pairs": 729270
+      },
+      "object_key": "sr.csv.gz",
+      "raw_row_values_included": false,
+      "row_count": 941634
+    },
+    {
+      "column_count": 16,
+      "column_profiles": [
+        {
+          "inferred_storage_type": "integer",
+          "maximum_text_length": 12,
+          "name": "notification_number",
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        {
+          "inferred_storage_type": "integer",
+          "maximum_text_length": 12,
+          "name": "reference_number",
+          "null_count": 348714,
+          "null_percentage": 37.0329
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 25,
+          "name": "creation_timestamp",
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 25,
+          "name": "completion_timestamp",
+          "null_count": 12192,
+          "null_percentage": 1.2948
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 32,
+          "name": "directorate",
+          "null_count": 9435,
+          "null_percentage": 1.002
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 61,
+          "name": "department",
+          "null_count": 9454,
+          "null_percentage": 1.004
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 40,
+          "name": "branch",
+          "null_count": 28401,
+          "null_percentage": 3.0161
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 54,
+          "name": "section",
+          "null_count": 93125,
+          "null_percentage": 9.8897
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 40,
+          "name": "code_group",
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 40,
+          "name": "code",
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 33,
+          "name": "cause_code_group",
+          "null_count": 810517,
+          "null_percentage": 86.0756
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 40,
+          "name": "cause_code",
+          "null_count": 811965,
+          "null_percentage": 86.2294
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 32,
+          "name": "official_suburb",
+          "null_count": 212413,
+          "null_percentage": 22.5579
+        },
+        {
+          "inferred_storage_type": "number",
+          "maximum_text_length": 19,
+          "name": "latitude",
+          "null_count": 212364,
+          "null_percentage": 22.5527
+        },
+        {
+          "inferred_storage_type": "number",
+          "maximum_text_length": 18,
+          "name": "longitude",
+          "null_count": 212364,
+          "null_percentage": 22.5527
+        },
+        {
+          "inferred_storage_type": "string",
+          "maximum_text_length": 15,
+          "name": "h3_level8_index",
+          "null_count": 0,
+          "null_percentage": 0.0
+        }
+      ],
+      "columns": [
+        "notification_number",
+        "reference_number",
+        "creation_timestamp",
+        "completion_timestamp",
+        "directorate",
+        "department",
+        "branch",
+        "section",
+        "code_group",
+        "code",
+        "cause_code_group",
+        "cause_code",
+        "official_suburb",
+        "latitude",
+        "longitude",
+        "h3_level8_index"
+      ],
+      "compressed_size_bytes": 36657416,
+      "coordinate_columns": {
+        "latitude": "latitude",
+        "longitude": "longitude"
+      },
+      "coordinates": {
+        "invalid_or_missing_pairs": 212364,
+        "latitude_max": -33.49232817,
+        "latitude_min": -34.348814637483,
+        "longitude_max": 18.96053944,
+        "longitude_min": 18.319446502448,
+        "valid_pairs": 729270
+      },
+      "h3_level8_index": {
+        "nonzero": 729270,
+        "unique_nonzero_count": 2082,
+        "zero": 212364
+      },
+      "object_key": "sr_hex.csv.gz",
+      "raw_row_values_included": false,
+      "row_count": 941634
+    }
+  ]
+}
