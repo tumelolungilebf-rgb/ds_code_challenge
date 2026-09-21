@@ -278,8 +278,17 @@ def compare_csv_with_reference(
     """Compare the serialized candidate output to every reference row and field."""
     if produced.fieldnames != reference.fieldnames:
         raise TransformationError("Candidate and reference CSV headers differ")
-    if not produced.fieldnames or policy["output_index_field"] not in produced.fieldnames:
-        raise TransformationError("Candidate output has no H3 index field")
+    headers = produced.fieldnames
+    required = {policy["row_identity_field"], policy["output_index_field"]}
+    if (
+        not headers
+        or len(headers) != len(set(headers))
+        or any(not name.strip() for name in headers)
+        or not required <= set(headers)
+    ):
+        raise TransformationError(
+            "Comparison CSV headers must be unique and include identity and H3 fields"
+        )
     counts: Counter = Counter(
         {
             "unpaired_rows": 0,
@@ -290,7 +299,16 @@ def compare_csv_with_reference(
         }
     )
     field_mismatches: Counter = Counter()
-    for produced_row, reference_row in zip_longest(produced, reference):
+    for row_number, (produced_row, reference_row) in enumerate(
+        zip_longest(produced, reference), start=1
+    ):
+        for label, row in (("candidate", produced_row), ("reference", reference_row)):
+            if row is not None and (
+                None in row or any(row.get(name) is None for name in headers)
+            ):
+                raise TransformationError(
+                    f"Malformed {label} CSV row at data position {row_number}"
+                )
         if produced_row is None or reference_row is None:
             counts["unpaired_rows"] += 1
             continue

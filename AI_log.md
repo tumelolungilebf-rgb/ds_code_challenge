@@ -202,6 +202,28 @@ the README's request to include token counts.
   the README content itself was unaffected.
 - Tokens: Exact session count unavailable; not estimated.
 
+## 21 September 2026 - clean-clone verification
+
+- Model/tool: GPT-5.6 Sol High in Codex; Airtable plugin.
+- Prompt: "okay lets do that". Context: perform the planned clean-clone
+  end-to-end check and continue recording the assessment work.
+- Use: Cloned the public fork into a new directory, created an isolated Python
+  3.12.14 environment, installed only the declared project dependencies, ran
+  the unified Sections 1-2 command, ran all tests, compared output hashes and
+  checked that generated files remained ignored.
+- Assistant correction: The first clean-clone attempt found that the README's
+  Windows command assumed the optional `py` launcher. The environment exposed
+  neither `py` nor `python` on `PATH`, so the README was changed to use the
+  common `python` command while documenting `py -3.12` and a full Python 3.12
+  executable path as alternatives. The test was restarted from a second clean
+  clone of corrected commit `4443bdb`.
+- Validation: The editable install passed; 32 tests passed; Section 1 and
+  Section 2 passed in a 65.552-second run. Output hashes exactly matched the
+  previously recorded values, and `git status --short` reported no tracked
+  changes after execution. Detailed evidence is in
+  `docs/clean_clone_verification.md`.
+- Tokens: Exact session count unavailable; not estimated.
+
 ## 21 September 2026 - final repository and submission audit
 
 - Model/tool: ChatGPT - GPT-5.6 Sol; GitHub and Airtable plugins.
@@ -210,3 +232,21 @@ the README's request to include token counts.
 - User action and correction: A direct GitHub edit through the ChatGPT integration was blocked by a 403 permission error. No repository change was claimed. Tumelo made the README edit manually in GitHub, and the resulting commit `b7a082c` and corrected wording were then independently verified.
 - Validation: Confirmed the fork remains public, no newer upstream changes were present, the README correction is live, and the final repository audit is complete.
 Usage: One final repository review and submission-audit session. Exact token count unavailable from the ChatGPT interface; not estimated.
+
+## 21 September 2026 - Astra final technical review
+
+- Model/tool: GPT-6 Astra in Codex; Airtable plugin.
+- Prompt: "I have switched to Astra now." Context: perform the final critical
+  review of requirements, implementation, public repository and submission files.
+- Use: Reviewed the original README and the application-specific brief, all
+  production modules and configuration, regression tests, Git history, public
+  fork metadata, upstream revision and Airtable evidence.
+- Assistant corrections: Restored the clean-clone log entry accidentally
+  replaced by the later audit entry in `db5e7f8`, retaining the newer audit and
+  user edits. Added explicit CSV header and row-width validation after finding
+  that extra CSV fields could be ignored by the reference comparator.
+- Validation: Two new regression tests reproduced the validation gap before
+  the fix. All 34 tests passed after the fix. A fresh-clone live verification
+  of the reviewed code will be recorded with the final results.
+- Usage: One technical review and correction session. Exact token count
+  unavailable; not estimated.

@@ -14,6 +14,7 @@ from pathlib import Path
 import h3
 
 from yearbeyond_pipeline.transform import (
+    TransformationError,
     classify_coordinates,
     compare_csv_with_reference,
     evaluate_counts,
@@ -139,6 +140,31 @@ class StreamingTransformationTests(unittest.TestCase):
 
 
 class ReferenceComparisonTests(unittest.TestCase):
+    def test_malformed_candidate_or_reference_row_is_rejected(self) -> None:
+        header = "notification_number,latitude,longitude,h3_level8_index\n"
+        valid = header + f"A,-33.92,18.42,{CENTER}\n"
+        malformed_rows = (
+            f"A,-33.92,18.42,{CENTER},unexpected\n",
+            "A,-33.92,18.42\n",
+        )
+        for row in malformed_rows:
+            for side in ("candidate", "reference"):
+                with self.subTest(row=row, side=side):
+                    candidate = header + row if side == "candidate" else valid
+                    reference = header + row if side == "reference" else valid
+                    with self.assertRaises(TransformationError):
+                        compare_csv_with_reference(
+                            reader(candidate), reader(reference), POLICY
+                        )
+
+    def test_duplicate_comparison_headers_are_rejected(self) -> None:
+        text = (
+            "notification_number,latitude,longitude,h3_level8_index,latitude\n"
+            f"A,-33.92,18.42,{CENTER},-33.92\n"
+        )
+        with self.assertRaises(TransformationError):
+            compare_csv_with_reference(reader(text), reader(text), POLICY)
+
     def test_exact_candidate_passes(self) -> None:
         text = (
             "notification_number,latitude,longitude,h3_level8_index\n"

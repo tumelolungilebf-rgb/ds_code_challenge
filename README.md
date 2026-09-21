@@ -82,8 +82,10 @@ flowchart LR
 ```
 
 Both sections write to temporary files and publish final artifacts only after
-their required validations pass. A failed run preserves any previous successful
-output and returns a nonzero exit status.
+their required validations pass. A validation failure preserves the previous
+successful dataset and returns a nonzero exit status. Publication replaces each
+file individually; it is not a transaction across all artifacts. Use the latest
+pipeline summary and stage reports to establish whether a run succeeded.
 
 ## Section 1: data extraction
 
@@ -117,7 +119,7 @@ Verified live result:
 | Missing, extra or changed reference features | 0 |
 | Bytes scanned by S3 Select | 108,254,980 |
 | Bytes returned | 2,011,878 |
-| Latest unified-run Section 1 time | 3.701 seconds |
+| Initial clean-clone Section 1 time | 3.841 seconds |
 
 The output GeoJSON was reproduced with SHA-256:
 
@@ -176,7 +178,7 @@ Verified live result:
 | Requests in the original grid | 729,267 |
 | Outside-grid requests recovered | 3 |
 | Identity, H3, shared-field or length mismatches | 0 |
-| Latest unified-run Section 2 time | 59.300 seconds |
+| Initial clean-clone Section 2 time | 61.182 seconds |
 
 Two complete standalone runs produced the same gzip SHA-256:
 
@@ -219,11 +221,12 @@ Run the full test suite after installation:
 On Linux or macOS, replace `.venv\Scripts\python.exe` with
 `.venv/bin/python`.
 
-The current suite contains 32 tests covering S3 event-stream handling, schema
+The current suite contains 34 tests covering S3 event-stream handling, schema
 score boundaries, critical validation gates, reference differences, coordinate
 categories, H3 assignments, join threshold boundaries, deterministic gzip
-serialization, safe publication and full-pipeline orchestration. Tests use
-small synthetic data; full supplied datasets are used for live validation.
+serialization, malformed CSV records, safe publication and full-pipeline
+orchestration. Tests use small synthetic data; full supplied datasets are used
+for live validation.
 
 ## Reproducibility choices
 
