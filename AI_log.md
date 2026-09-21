@@ -143,3 +143,27 @@ the README's request to include token counts.
   membership gaps. The policy JSON and boundary arithmetic were checked locally.
   Production Section 2 transformation and regression tests remain pending.
 - Tokens: Exact session count unavailable; not estimated.
+
+## 21 September 2026 - Section 2 production implementation
+
+- Model/tool: GPT-5.6 Sol High in Codex; Airtable plugin.
+- Prompt: "I have switched back to Sol now." Context: implement the reviewed
+  Section 2 design, explain the work, and continue tracking it in Airtable.
+- Use: Added a streaming coordinate-to-H3 transformation, deterministic gzip
+  writer, standalone CLI, supplemental-cell audit output, structured aggregate
+  logging, two join-error thresholds, serialized reference comparison, source
+  stability checks, safe publication, and focused regression tests.
+- Assistant improvements during implementation: Added explicit original-grid
+  unjoined and unexpected-error counts after the first live report required the
+  executor to infer them from component counts. Added an exact-threshold test
+  and a one-row-over-threshold test before the final live run. An editable
+  install check was first run with build isolation disabled, which failed
+  because the environment did not already contain `setuptools`; it was rerun
+  using the normal declared build-isolation process and passed. These were
+  assistant improvements and corrections, not user corrections.
+- Validation: 29 tests passed. Two complete live runs each retained and matched
+  all 941,634 rows with zero reference differences. Both produced SHA-256
+  `2724a0eea1007a5e16fd0a8037a95ffedb76e94735d768b4d4a1fd51635fabd0`.
+  The final run completed in 86.592 seconds and recovered three requests whose
+  two calculated cells were absent from the supplied grid.
+- Tokens: Exact session count unavailable; not estimated.

@@ -18,6 +18,8 @@ CREDENTIALS_URL = (
 )
 MIXED_RESOLUTION_OBJECT = "city-hex-polygons-8-10.geojson"
 LEVEL_8_REFERENCE_OBJECT = "city-hex-polygons-8.geojson"
+SERVICE_REQUEST_OBJECT = "sr.csv.gz"
+SERVICE_REQUEST_REFERENCE_OBJECT = "sr_hex.csv.gz"
 
 
 class SourceAccessError(RuntimeError):
