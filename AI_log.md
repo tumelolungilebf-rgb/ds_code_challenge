@@ -202,24 +202,11 @@ the README's request to include token counts.
   the README content itself was unaffected.
 - Tokens: Exact session count unavailable; not estimated.
 
-## 21 September 2026 - clean-clone verification
+## 21 September 2026 - final repository and submission audit
 
-- Model/tool: GPT-5.6 Sol High in Codex; Airtable plugin.
-- Prompt: "okay lets do that". Context: perform the planned clean-clone
-  end-to-end check and continue recording the assessment work.
-- Use: Cloned the public fork into a new directory, created an isolated Python
-  3.12.14 environment, installed only the declared project dependencies, ran
-  the unified Sections 1-2 command, ran all tests, compared output hashes and
-  checked that generated files remained ignored.
-- Assistant correction: The first clean-clone attempt found that the README's
-  Windows command assumed the optional `py` launcher. The environment exposed
-  neither `py` nor `python` on `PATH`, so the README was changed to use the
-  common `python` command while documenting `py -3.12` and a full Python 3.12
-  executable path as alternatives. The test was restarted from a second clean
-  clone of corrected commit `4443bdb`.
-- Validation: The editable install passed; 32 tests passed; Section 1 and
-  Section 2 passed in a 65.552-second run. Output hashes exactly matched the
-  previously recorded values, and `git status --short` reported no tracked
-  changes after execution. Detailed evidence is in
-  `docs/clean_clone_verification.md`.
-- Tokens: Exact session count unavailable; not estimated.
+- Model/tool: ChatGPT - GPT-5.6 Sol; GitHub and Airtable plugins.
+- Prompt summary: Review the Airtable control base and public GitHub fork, identify what remained before submission, verify the final repository state, and keep the tracker aligned with the repository.
+- Use: Reviewed public visibility, upstream status, commit history, Sections 0-2 completion, clean-clone evidence, test results, README instructions and AI-use tracking. Identified one ambiguous Windows setup sentence in the README and guided the final correction.
+- User action and correction: A direct GitHub edit through the ChatGPT integration was blocked by a 403 permission error. No repository change was claimed. Tumelo made the README edit manually in GitHub, and the resulting commit `b7a082c` and corrected wording were then independently verified.
+- Validation: Confirmed the fork remains public, no newer upstream changes were present, the README correction is live, and the final repository audit is complete.
+Usage: One final repository review and submission-audit session. Exact token count unavailable from the ChatGPT interface; not estimated.
