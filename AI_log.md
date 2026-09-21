@@ -24,7 +24,7 @@ the README's request to include token counts.
 
 ## 21 September 2026 - move to Codex
 
-- Recorded tool: Codex; exact model not recorded.
+- Recorded tool: Codex; GPT - 5.6 Sol.
 - Request summary: Use Codex for implementation while keeping Airtable as the
   work tracker.
 - Use: Established the development workflow.
@@ -33,7 +33,7 @@ the README's request to include token counts.
 
 ## 21 September 2026 - scope, repository and account setup
 
-- Recorded model/tool: Codex / GPT-5; Airtable plugin (historical label).
+- Recorded model/tool: Codex; GPT-5.6 Sol; Airtable plugin (historical label).
 - Request summary: Read the full README, inspect the repository, plan only
   Sections 0-2 before implementation, teach each step, and track the work.
 - Use: Reviewed plan, local clone, public fork, Git remotes and repository-local
@@ -46,7 +46,7 @@ the README's request to include token counts.
 
 ## 21 September 2026 - isolated Python environment
 
-- Recorded model/tool: Codex / GPT-5; Airtable plugin (historical label).
+- Recorded model/tool: Codex; GPT-5.6 Sol; Airtable plugin (historical label).
 - Request summary: Continue the next setup task, teach it step by step, and
   track progress in Airtable.
 - Use: Python 3.12.14 environment, `.gitignore`, `.python-version`, and checks
@@ -59,7 +59,7 @@ the README's request to include token counts.
 
 ## 21 September 2026 - AWS source access
 
-- Recorded model/tool: Codex / GPT-5; Airtable plugin (historical label).
+- Recorded model/tool: Codex; GPT-5.6 Sol; Airtable plugin (historical label).
 - Request summary: Continue Section 0 with explanations and tracking evidence.
 - Use: `scripts/check_source_access.py`; object access checks; a successful
   S3 Select probe using supplied credentials. Evidence: commit `c4f6ed2`.
@@ -70,7 +70,7 @@ the README's request to include token counts.
 
 ## 21 September 2026 - source inspection
 
-- Recorded model: Codex - current model (non-Astra); precise version unrecorded.
+- Recorded model: Codex; GPT-5.6 Sol; Airtable plugin 
 - Request summary: Continue gradually, explain the work, inspect the sources,
   stay within Sections 0-2, and keep Airtable updated.
 - Use: `scripts/inspect_sources.py` and `docs/source_data_profile.json`;
@@ -102,7 +102,7 @@ the README's request to include token counts.
 
 ## 21 September 2026 - Section 1 implementation
 
-- Model/tool: GPT-5.6 Sol High in Codex; Airtable plugin.
+- Model/tool: Codex; GPT-5.6 Sol; Airtable plugin
 - Prompt: "Okay I have switched back to Sol high." Context: continue from the
   approved Astra design into Section 1 implementation and tests.
 - Use: Added the installable package, streamed S3 Select event parser, six-check
@@ -146,7 +146,7 @@ the README's request to include token counts.
 
 ## 21 September 2026 - Section 2 production implementation
 
-- Model/tool: GPT-5.6 Sol High in Codex; Airtable plugin.
+- Model/tool: Codex; GPT-5.6 Sol; Airtable plugin.
 - Prompt: "I have switched back to Sol now." Context: implement the reviewed
   Section 2 design, explain the work, and continue tracking it in Airtable.
 - Use: Added a streaming coordinate-to-H3 transformation, deterministic gzip
