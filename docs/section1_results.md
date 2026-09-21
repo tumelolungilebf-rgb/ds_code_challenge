@@ -5,7 +5,7 @@ h3 4.5.0. The runtime outputs are intentionally ignored by Git and can be
 recreated with:
 
 ```powershell
-python -m yearbeyond_pipeline
+yearbeyond-section1
 ```
 
 ## Live extraction and validation

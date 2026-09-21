@@ -13,7 +13,8 @@ dependencies = [
 ]
 
 [project.scripts]
-yearbeyond-section1 = "yearbeyond_pipeline.__main__:main"
+yearbeyond-pipeline = "yearbeyond_pipeline.full_cli:main"
+yearbeyond-section1 = "yearbeyond_pipeline.section1_cli:main"
 yearbeyond-section2 = "yearbeyond_pipeline.section2_cli:main"
 
 [tool.setuptools.packages.find]

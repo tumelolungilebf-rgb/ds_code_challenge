@@ -167,3 +167,19 @@ the README's request to include token counts.
   The final run completed in 86.592 seconds and recovered three requests whose
   two calculated cells were absent from the supplied grid.
 - Tokens: Exact session count unavailable; not estimated.
+
+## 21 September 2026 - unified reproducible entry point
+
+- Model/tool: GPT-5.6 Sol High in Codex; Airtable plugin.
+- Prompt: "now lets continue". Context: proceed to the next tracked task after
+  Section 2, which was the unified project entry point and dependencies.
+- Use: Added `yearbeyond-pipeline` and made `python -m yearbeyond_pipeline` run
+  Sections 1 and 2 in dependency order with one AWS client. Preserved standalone
+  commands for each section and added an overall machine-readable summary.
+- Validation: 32 tests passed. Tests prove Section 2 is skipped after a Section
+  1 failure and that client-setup errors still produce a failure summary. The
+  installed command help was checked, followed by a complete live run: Section
+  1 passed in 3.701 seconds, Section 2 passed in 59.300 seconds, and the combined
+  run passed in 63.567 seconds. Existing verified output hashes were unchanged.
+- Corrections: None during this task.
+- Tokens: Exact session count unavailable; not estimated.
