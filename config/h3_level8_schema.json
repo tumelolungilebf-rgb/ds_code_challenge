@@ -1,0 +1,87 @@
+{
+  "contract_version": 1,
+  "description": "Application validation contract for extracted H3 resolution-8 GeoJSON; not a JSON Schema specification.",
+  "collection": {
+    "type": "FeatureCollection",
+    "features_type": "array",
+    "minimum_features": 1,
+    "unique_key": "properties.index",
+    "additional_fields": "preserve_and_report"
+  },
+  "feature_checks": [
+    {
+      "id": "feature_structure",
+      "critical": true,
+      "rule": "Feature is an object with type exactly Feature, an object properties, and an object geometry."
+    },
+    {
+      "id": "h3_index",
+      "critical": true,
+      "path": "properties.index",
+      "type": "string",
+      "h3_valid_cell": true,
+      "h3_resolution": 8,
+      "rule": "Nonempty string accepted by the H3 library as a valid cell at resolution 8."
+    },
+    {
+      "id": "resolution",
+      "critical": true,
+      "path": "properties.resolution",
+      "type": "integer",
+      "value": 8,
+      "rule": "An integer equal to 8; booleans and numeric strings do not qualify."
+    },
+    {
+      "id": "polygon_structure",
+      "critical": true,
+      "path": "geometry",
+      "type": "Polygon",
+      "minimum_rings": 1,
+      "minimum_positions_per_ring": 4,
+      "position_dimensions": 2,
+      "coordinate_order": ["longitude", "latitude"],
+      "longitude_bounds": [-180, 180],
+      "latitude_bounds": [-90, 90],
+      "closed_rings": true,
+      "rule": "Nonempty ring arrays with at least four positions each, exactly equal first and last positions, and finite numeric longitude/latitude pairs within inclusive bounds. Booleans do not qualify as numbers. Structural validation does not prove topological validity."
+    },
+    {
+      "id": "centroid_latitude",
+      "critical": false,
+      "path": "properties.centroid_lat",
+      "type": "number",
+      "bounds": [-90, 90],
+      "rule": "Present, non-null, finite number within inclusive bounds; booleans do not qualify."
+    },
+    {
+      "id": "centroid_longitude",
+      "critical": false,
+      "path": "properties.centroid_lon",
+      "type": "number",
+      "bounds": [-180, 180],
+      "rule": "Present, non-null, finite number within inclusive bounds; booleans do not qualify."
+    }
+  ],
+  "scoring": {
+    "method": "equal_weight_feature_checks",
+    "formula": "100 * passed_checks / (feature_count * number_of_feature_checks)",
+    "minimum_percent": 99.5,
+    "comparison": "greater_than_or_equal_without_rounding",
+    "empty_or_invalid_collection_score": 0,
+    "missing_or_inapplicable_check": "fail_without_removing_from_denominator",
+    "duplicate_or_critical_failure": "fail_run_regardless_of_score"
+  },
+  "reference_comparison": {
+    "reference_object": "city-hex-polygons-8.geojson",
+    "key": "properties.index",
+    "require_unique_keys_in_both": true,
+    "require_equal_key_sets": true,
+    "compare_paths": ["type", "geometry.type", "geometry.coordinates", "properties.centroid_lat", "properties.centroid_lon"],
+    "numeric_absolute_tolerance": 1e-9,
+    "numeric_relative_tolerance": 0,
+    "ignore_feature_order": true,
+    "preserve_ring_and_vertex_order": true,
+    "allowed_mismatched_features": 0,
+    "resolution_handling": "Required and checked on extracted features; absent in the supplied reference, so excluded from reference equality."
+  }
+}
