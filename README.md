@@ -40,8 +40,8 @@ python -m venv .venv
 ```
 
 The version check must report Python 3.12.x. If `python` is not available on
-Windows, use `py -3.12` or the full path to a Python 3.12 executable in the
-first two commands.
+Windows, use `py -3.12` or the full path to a Python 3.12 executable for the
+version-check and virtual-environment commands.
 
 ### Linux or macOS
 
