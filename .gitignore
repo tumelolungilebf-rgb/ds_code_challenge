@@ -4,6 +4,9 @@
 # Python-generated files
 __pycache__/
 *.py[cod]
+*.egg-info/
+build/
+dist/
 
 # Test and analysis caches
 .pytest_cache/

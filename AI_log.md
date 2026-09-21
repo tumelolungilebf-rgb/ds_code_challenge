@@ -99,3 +99,23 @@ the README's request to include token counts.
   and configuration relationships. No extraction/validator implementation or
   live Section 1 correctness result is claimed by this design checkpoint.
 - Tokens: Unavailable from the tool outputs for this session.
+
+## 21 September 2026 - Section 1 implementation
+
+- Model/tool: GPT-5.6 Sol High in Codex; Airtable plugin.
+- Prompt: "Okay I have switched back to Sol high." Context: continue from the
+  approved Astra design into Section 1 implementation and tests.
+- Use: Added the installable package, streamed S3 Select event parser, six-check
+  schema scorer, critical gates, keyed reference comparison, atomic publication,
+  structured timing logs and focused tests. Ran the live pipeline twice and
+  recorded deterministic output and verified results.
+- Assistant corrections and review improvements: The initial Airtable activity
+  write used an unavailable `Implementation` select option and was retried with
+  the existing `Code` option. A Windows compile command passed a wildcard
+  literally and was replaced with explicit file enumeration and test discovery.
+  Credential creation was moved inside the measured pipeline so setup failures
+  can produce evidence. These were assistant corrections, not user corrections.
+- Validation: 20 tests passed. Both live runs extracted 3,832 features, scored
+  100%, matched the reference with zero differences and produced the same
+  SHA-256 output hash.
+- Tokens: Unavailable from the Codex interface; not estimated.
