@@ -239,8 +239,10 @@ small synthetic data; full supplied datasets are used for live validation.
 - Generated datasets, logs, environments and secrets are excluded by
   [`.gitignore`](.gitignore).
 
-The latest unified live run passed both sections in 63.567 seconds. Timing is
-reported as evidence of that run, not as a general performance benchmark.
+The clean-clone unified run passed both sections in 65.552 seconds. Timing is
+reported as evidence of that run, not as a general performance benchmark. The
+complete check is recorded in
+[`docs/clean_clone_verification.md`](docs/clean_clone_verification.md).
 
 ## Project structure
 
