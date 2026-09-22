@@ -4,17 +4,16 @@
 
 This repository is Tumelo Lungile's Data Engineering submission based on the
 [City of Cape Town Data Science Unit code challenge](https://github.com/cityofcapetown/ds_code_challenge).
-The agreed scope is limited to:
+The submission covers:
 
 - Section 0: Setup
 - Section 1: Data Extraction
 - Section 2: Initial Data Transformation
 
-Sections 3-6 are outside this submission and have not been implemented.
-
-The solution extracts resolution-8 H3 polygons with AWS S3 Select, validates
-them with a graded schema contract, assigns every service request to an H3 cell,
-and checks the serialized result against the supplied reference dataset.
+The pipeline extracts resolution-8 H3 polygons using AWS S3 Select and checks
+their schema and reference agreement. It then assigns an H3 index to each
+service request with usable coordinates. Requests with missing coordinates
+receive `0`. The saved output is checked against the supplied reference.
 
 ## Quick start
 
@@ -24,9 +23,9 @@ and checks the serialized result against the supplied reference dataset.
 - Python 3.12 (developed and verified with Python 3.12.14)
 - Internet access to the public challenge files in `af-south-1`
 
-A personal AWS account is not required. The pipeline downloads the challenge's
-supplied read-only dummy credentials at runtime. It does not print or save those
-credentials, and no secrets are committed to this repository.
+The pipeline uses the challenge's supplied read-only credentials, which it
+retrieves at runtime. A personal AWS account is not required. Credential values
+are neither logged nor saved to disk.
 
 ### Windows PowerShell
 
@@ -41,7 +40,8 @@ python -m venv .venv
 
 The version check must report Python 3.12.x. If `python` is not available on
 Windows, use `py -3.12` or the full path to a Python 3.12 executable for the
-version-check and virtual-environment commands.
+version-check and virtual-environment commands. In PowerShell, a quoted
+executable path needs the call operator: `& "C:\path\to\python.exe" --version`.
 
 ### Linux or macOS
 
@@ -57,13 +57,30 @@ The final command runs Section 1 and then Section 2 without interactive input.
 It exits with status `0` only when both sections pass. Section 2 is skipped if
 Section 1 fails, because it depends on the validated grid produced by Section 1.
 
-Installed console commands are also available:
+To run a single section from the same environment:
 
-```text
-yearbeyond-pipeline   # complete Sections 1-2 pipeline
-yearbeyond-section1   # Section 1 only
-yearbeyond-section2   # Section 2 only; requires a validated local grid
+```powershell
+.venv\Scripts\yearbeyond-section1.exe
+.venv\Scripts\yearbeyond-section2.exe
 ```
+
+Section 2 requires the local grid produced by Section 1. On Linux or macOS,
+use `.venv/bin/yearbeyond-section1` and `.venv/bin/yearbeyond-section2`.
+The installed commands
+`yearbeyond-pipeline`, `yearbeyond-section1` and `yearbeyond-section2` are also
+available when the virtual environment is activated.
+
+## Source files
+
+All four files are in S3 bucket `cct-ds-code-challenge-input-data`, region
+`af-south-1`. The pipeline reads them automatically.
+
+| File | Use |
+| --- | --- |
+| `city-hex-polygons-8-10.geojson` | Section 1 input containing resolutions 8, 9 and 10 |
+| `city-hex-polygons-8.geojson` | Reference for the extracted resolution-8 grid |
+| `sr.csv.gz` | Section 2 input containing service requests |
+| `sr_hex.csv.gz` | Reference for the transformed service requests |
 
 ## Pipeline overview
 
@@ -81,11 +98,11 @@ flowchart LR
     G -->|pass| H[Published sr_hex.csv.gz]
 ```
 
-Both sections write to temporary files and publish final artifacts only after
-their required validations pass. A validation failure preserves the previous
-successful dataset and returns a nonzero exit status. Publication replaces each
-file individually; it is not a transaction across all artifacts. Use the latest
-pipeline summary and stage reports to establish whether a run succeeded.
+Each section writes a temporary dataset and replaces the final file after
+validation passes. A validation failure leaves the previous dataset in place
+and returns a nonzero exit status. Files are replaced individually, so a run
+can be interrupted between replacements. Check the latest pipeline summary
+and stage reports before using the outputs.
 
 ## Section 1: data extraction
 
@@ -100,9 +117,9 @@ WHERE s.properties.resolution = 8
 
 Validation uses the standalone contract in
 [`config/h3_level8_schema.json`](config/h3_level8_schema.json). Six equally
-weighted rules produce a non-binary conformance score. The required score is
-99.5%, with separate critical gates for structure, H3 validity, resolution and
-polygon geometry. Passing the score cannot hide a critical failure.
+weighted rules produce a percentage conformance score. The minimum is 99.5%.
+Feature structure, H3 validity, resolution and polygon structure must also pass
+without errors. Duplicate H3 indices fail the run.
 
 The extracted features are also compared by H3 index with
 `city-hex-polygons-8.geojson`. This detects missing, extra, duplicate and changed
@@ -133,8 +150,7 @@ Detailed rationale and evidence are in
 
 ## Section 2: initial transformation
 
-The transformation streams `sr.csv.gz`; it does not load 941,634 row
-dictionaries into a dataframe. For each row it:
+The transformation reads `sr.csv.gz` one row at a time. It:
 
 1. Preserves the 15 named source fields as text and in source order.
 2. Assigns `0` when either coordinate is empty.
@@ -142,15 +158,15 @@ dictionaries into a dataframe. For each row it:
 4. Calculates the resolution-8 address with
    `h3.latlng_to_cell(latitude, longitude, 8)`.
 5. Checks membership in the validated Section 1 grid.
-6. Derives and separately audits a valid H3 cell missing from that supplied
-   grid, while keeping the original grid failure visible.
+6. Derives any missing H3 cell and records it in a separate audit file. The
+   request remains counted as a failed match against the original grid.
 7. Reopens the temporary gzip and compares every serialized field and row with
    `sr_hex.csv.gz` before publication.
 
-The supplied grid omits two valid H3 cells used by three requests. The pipeline
-discovers these cells dynamically, derives their boundaries using the pinned H3
-library, and writes them to a supplemental audit artifact. It never copies the
-answer from the reference dataset and does not modify the Section 1 grid.
+Three requests fall in two valid H3 cells absent from the supplied grid. The
+pipeline derives these cells from the coordinates using the pinned H3 library.
+It saves their boundaries separately and retains the Section 1 grid unchanged.
+The reference dataset is used only to validate the output.
 
 ### Join error policy
 
@@ -159,14 +175,14 @@ The standalone policy is
 
 | Gate | Calculation | Maximum | Observed |
 | --- | --- | ---: | ---: |
-| Original-grid unjoined | missing + invalid + outside-grid rows / all rows | 25% | 22.553030% |
-| Unexpected join error | invalid + outside-grid rows / nonmissing rows | 0.001% | 0.000411% |
+| Original-grid unjoined | Sum of missing, invalid and outside-grid rows, divided by all rows | 25% | 22.553030% |
+| Unexpected join error | Sum of invalid and outside-grid rows, divided by nonmissing rows | 0.001% | 0.000411% |
 
-The 25% gate allows the measured missing-location rate while detecting a large
-increase or broken column mapping. The 0.001% gate permits at most seven
-unexpected rows at the observed eligible-row count; eight would fail. Any
-malformed coordinate fails independently, even below these percentage limits.
-Reference H3 differences also have a separate zero-tolerance gate.
+The 25% limit allows for the measured missing-location rate and some headroom.
+The 0.001% limit allows at most seven unexpected rows at the observed
+nonmissing-row count; eight would fail. Malformed coordinates and reference H3
+mismatches fail the run regardless of these limits. Both thresholds are
+documented project choices based on source inspection.
 
 Verified live result:
 
@@ -242,10 +258,10 @@ for live validation.
 - Generated datasets, logs, environments and secrets are excluded by
   [`.gitignore`](.gitignore).
 
-The final-review clean-clone run passed both sections in 66.779 seconds. Timing
-is evidence of that run, not a general performance benchmark. The initial run
-is recorded in [`docs/clean_clone_verification.md`](docs/clean_clone_verification.md);
-the reviewed code, repeat verification and practical limits are recorded in
+The final clean-clone run passed both sections in 66.779 seconds. Runtime
+depends on network and service conditions. The initial run is recorded in
+[`docs/clean_clone_verification.md`](docs/clean_clone_verification.md). The
+latest verification and operating limits are in
 [`docs/final_review.md`](docs/final_review.md).
 
 ## Project structure
@@ -260,10 +276,8 @@ AI_log.md                     required record of AI-assisted work
 pyproject.toml                package metadata, commands and dependencies
 ```
 
-AI assistance is disclosed in [`AI_log.md`](AI_log.md), including prompts,
-models, validation, user corrections and assistant corrections. Exact token
-counts were unavailable in the interface and are identified as unavailable
-rather than estimated.
+AI-assisted development is documented in [`AI_log.md`](AI_log.md), including
+requests, models, generated work, corrections and verification.
 
 The original challenge statement and Sections 3-6 remain available in the
 [upstream repository](https://github.com/cityofcapetown/ds_code_challenge).

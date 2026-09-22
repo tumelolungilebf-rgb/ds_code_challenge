@@ -1,6 +1,8 @@
 # Section 2 transformation results
 
-Status: production transformation completed and validated on 21 September 2026.
+Validated on 21 September 2026. This records the Section 2 implementation
+checkpoint. The [final review](final_review.md) contains the latest combined
+verification.
 
 ## Command
 
@@ -10,7 +12,7 @@ After Section 1 has produced the validated resolution-8 grid, run:
 .venv\Scripts\python.exe -m yearbeyond_pipeline.section2_cli
 ```
 
-The generated dataset and run artifacts are intentionally ignored by Git:
+Generated files are excluded from Git:
 
 - `data/processed/sr_hex.csv.gz`
 - `outputs/section2_validation.json`
@@ -42,8 +44,8 @@ zero-based row number.
 | Reference unpaired rows | 0 |
 
 The original-grid unjoined rate was 22.553030%, below the configured 25%
-maximum. This rate includes expected missing locations so that missingness stays
-visible. The unexpected join error rate was 0.000411%, below the 0.001% maximum.
+maximum. This includes requests with missing locations. The unexpected join
+error rate was 0.000411%, below the 0.001% maximum.
 The three unexpected rows were recovered using two H3 cells derived from their
 coordinates. They remain counted as original-grid failures in the report.
 
@@ -70,16 +72,9 @@ The second run was the report at this implementation checkpoint. Its run ID is
 
 ## Test evidence
 
-All 29 repository tests passed. Section 2 tests cover coordinate categories,
+All 29 repository tests at this checkpoint passed. Section 2 tests cover coordinate categories,
 row preservation, missing-coordinate assignment, dynamically derived grid
 coverage, deterministic gzip output, invalid coordinates, the unnamed-column
 guard, the exact error threshold boundary, reordered reference rows, and safe
 publication. The publication test proves that a failed reference comparison
 does not replace an existing successful output.
-
-Interview explanation: the join key is calculated from each latitude and
-longitude with the pinned H3 library. A left-join policy retains every request.
-Missing locations receive `0`; malformed coordinates fail the run. Valid cells
-missing from the supplied grid are derived from the H3 definition, recorded as
-coverage failures, and audited separately. The produced file is only published
-after its serialized contents match the supplied reference exactly.

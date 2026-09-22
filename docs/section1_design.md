@@ -1,29 +1,24 @@
 # Section 1: extraction and validation design
 
-Historical design checkpoint, 21 September 2026. Future-tense statements below
-describe the plan before implementation. Implementation is now complete; see
-[verified results](section1_results.md) and the [final review](final_review.md).
-Scope remains Sections 0, 1 and 2 only.
+Design recorded on 21 September 2026, before implementation. Results are in
+[Section 1 results](section1_results.md) and the [final review](final_review.md).
 
 ## Purpose and evidence
 
 Section 1 must extract resolution-8 features from the mixed-resolution file
 using AWS S3 Select, compare them against the dedicated reference, calculate
 a graded schema conformance score, and log operation and validation timings.
-These requirements come from the original README. The rules and thresholds
-below are our engineering choices, not thresholds prescribed by the assessment.
+The assessment requires these checks. The specific rules and thresholds are
+project design choices.
 
 The inspection profile reports 203,840 mixed-resolution features, including
 3,832 at resolution 8. The reference also has 3,832 features with unique indices.
-These are observed counts, not a permanent hard-coded acceptance criterion.
-They do not establish feature-by-feature equality.
+The validator compares individual features and does not hard-code these counts.
 
-The inspection of mixed-file property types used one sample. Full extracted
-feature validation is still necessary. Similarly, equal CSV missing-coordinate
-and zero-index counts do not establish a row-by-row match. The profiler's
-`valid_pairs` means finite numeric pairs; it does not perform an individual
-geographic range check, polygon join, or H3 validation. Its observed extrema
-are within valid global bounds, but this is not a substitute for those checks.
+Initial inspection sampled the mixed-file property types. Full validation must
+check every extracted feature. The source profiler's `valid_pairs` count covers
+finite numeric coordinates only; range checks and H3 assignment belong to the
+transformation stage.
 
 ## Extraction
 
@@ -36,34 +31,30 @@ FROM S3Object[*].features[*] AS s
 WHERE s.properties.resolution = 8
 ```
 
-The WHERE clause filters at S3. Return JSON with newline delimiters and use
-JSON DOCUMENT input. The existing probe and inspection establish access;
-this exact filtered extraction still needs an integration run.
+The WHERE clause filters at S3. Use JSON DOCUMENT input and return
+newline-delimited JSON.
 AWS describes this JSON path and filtering syntax in its
 [SELECT documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-select-sql-reference-select.html).
 
-Consume the complete event stream, buffering partial byte records until a
-newline arrives; network events need not align with JSON records or UTF-8
-characters. Require the completion event and reject malformed or interrupted
-responses. Close the stream even when validation fails. Any retry starts with
-an empty buffer; it must not append a second response to a partial first one.
+Buffer incoming bytes until a complete record arrives. Network chunks can split
+JSON records or UTF-8 characters. Require the completion event, reject malformed
+or interrupted responses, and close the stream after processing. A retry must
+start with an empty buffer.
 
-Preserve source features, including their resolution property. Build a
-FeatureCollection, validate it, sort successful features by H3 index, and
-write deterministic JSON via a temporary file and atomic replacement. Only
-a successful run publishes the output. A failed run must have an explicit
-failure report; a previous successful output must not be mistaken for new data.
+Preserve the source features and resolution property. Validate the
+FeatureCollection, sort features by H3 index, and write deterministic JSON
+through a temporary file. Replace the output only after validation passes.
+Record failures in the run report.
 
-Use bounded SDK connection retries and timeouts. If S3 Select becomes
-unavailable, fail clearly rather than silently substitute local filtering.
-The supplied credentials previously worked; new account creation is unnecessary.
+Use bounded SDK retries and timeouts. An unavailable S3 Select service must
+produce a failure. Local filtering would not meet the extraction requirement.
 
 ## Desired schema and score
 
-The standalone contract is `config/h3_level8_schema.json`. It is an application
-configuration with documented rules, not a claim to implement the JSON Schema
-standard. The validator will load it and reject unsupported contract versions,
-unknown checks or invalid thresholds.
+The standalone contract is `config/h3_level8_schema.json`. It defines the
+application's validation rules rather than using the JSON Schema standard.
+The validator must reject unsupported versions, unknown checks and invalid
+thresholds.
 
 Each feature receives six equally weighted checks:
 
@@ -80,55 +71,47 @@ GeoJSON places longitude before latitude and uses closed rings. The contract
 uses two-dimensional positions because that is the target dataset format;
 this is narrower than all formats permitted by
 [RFC 7946](https://www.rfc-editor.org/rfc/rfc7946.html).
-Use H3 library validation and resolution inspection, rather than string length
-alone, as supported by the [H3 API](https://h3geo.org/docs/api/inspection/).
+Validate identifiers and resolution through the
+[H3 API](https://h3geo.org/docs/api/inspection/).
 
-For N features, score = 100 * passed checks / (6 * N). Every check is counted,
-even when a parent field is missing: dependent checks fail rather than disappear
-from the denominator. Report the overall score, each rule's failure count,
-and the number of fully conformant features. An empty or invalid collection
-gets score 0 and fails. Duplicate indices or any critical failure also fail.
-Never silently drop or repair malformed features to improve the score.
+For N features, score = 100 * passed checks / (6 * N). Missing fields fail
+their checks and remain in the denominator. Report the overall score, failures
+by rule and fully conformant feature count. Empty or invalid collections score
+0 and fail. Duplicate indices and critical failures also fail the run.
 
-**Threshold: score >= 99.5%, evaluated before display rounding.** This is a
-deliberately strict initial policy for a curated reference dataset, not a
-statistically estimated error rate. It permits a small amount of auxiliary
-centroid metadata incompleteness without concealing broken identifiers or
-geometry. Review the policy if data ownership or requirements change.
+**Minimum score: 99.5%, evaluated before rounding.** This operational threshold
+allows a small number of centroid metadata failures. Identifiers and polygon
+structure must pass every critical check. Reassess the threshold if the data
+or requirements change.
 
 For example, 100 features produce 600 checks. Three failed centroid checks
 give 597/600 = 99.5%, passing the score gate. Four give about 99.333%, failing it.
 One invalid H3 identifier fails the run regardless of the overall score.
-We expect 100% on this source, but have not measured that with the new validator.
 
 ## Reference comparison is a separate acceptance check
 
 Read `city-hex-polygons-8.geojson` independently. Require a nonempty reference
 FeatureCollection, valid unique level-8 identifiers, and structurally valid
 polygons. Compare key sets in both directions to find missing and extra cells.
-Do not rely on feature order or silently collapse duplicate keys into a dict.
+Compare by H3 index and reject duplicates before building a lookup.
 
 For each matching index, compare feature type, geometry type, every coordinate,
 and the centroid properties. Missing required comparison paths fail; nulls
 match only nulls and strings match exactly. Numeric values must be finite and
 equal within an absolute tolerance of 1e-9 degrees and zero relative tolerance.
-The tolerance accommodates numeric serialization differences at far below
-the precision needed for this task; it does not permit meaningful changes in
-location. Never round coordinates before comparison.
+This tolerance allows minor numeric serialization differences. Compare the
+original coordinate values without rounding.
 
-Preserve and compare ring and vertex order. A rotated or reversed ring may
-describe the same polygon, but it fails this source-preservation comparison;
-we are checking an extraction, not geometric equivalence after transformation.
-Polygon structural checks do not prove absence of self-intersections.
+Preserve ring and vertex order to check that extraction retained the source
+geometry. Rotated or reversed rings fail this comparison. Structural checks
+cover ring closure and coordinate validity; they do not test self-intersections.
 
 The reference lacks `properties.resolution`, so compare shared fields and
 validate that field independently on the extraction. Report additional fields
 as schema drift while preserving them; they do not enter this score.
 
-Require zero reference mismatches. Passing the quality score never overrides
-a reference mismatch: source conformity and correct extraction are different
-questions. Overall success requires the score threshold, critical checks,
-unique identifiers, and reference equality to all pass.
+Require zero reference mismatches. Acceptance requires the minimum schema
+score, all critical checks, unique identifiers and reference agreement.
 
 ## Logging, outputs and resources
 
@@ -143,11 +126,11 @@ reference comparison, output write and total run separately. Log failures with
 the stage and useful error category; never log credential values. Compare
 source metadata before and after the run and fail if objects changed during it.
 
-Proposed outputs: `data/processed/city-hex-polygons-8.geojson`,
+Outputs: `data/processed/city-hex-polygons-8.geojson`,
 `outputs/section1_validation.json`, and `outputs/pipeline.log`. These generated
 files are ignored by Git; commit a short verified results summary as evidence.
-Keep source files on S3; only the selected features and small reference need
-local memory. Stream parsing must not buffer the 103 MB mixed source locally.
+Keep the mixed source on S3. Local memory holds the selected features and
+the level-8 reference.
 
 ## Implementation structure and tests
 
@@ -165,9 +148,8 @@ pyproject.toml                # package setup and dependencies
 AI_log.md                     # AI requests, corrections, models and usage
 ```
 
-Pin tested dependency versions and document installation and execution when
-the commands exist. Proposed runtime dependencies are boto3 and h3; the
-inspection helpers use Python's standard library. Add tools only if required.
+Pin boto3 and h3 to the tested versions. Inspection helpers use Python's
+standard library.
 
 Unit tests should cover: fractional scores; exact threshold boundaries; a high
 score with a critical failure; absent/null/boolean/wrong-type fields; invalid
@@ -178,18 +160,11 @@ and multibyte text; missing stream completion; and failure before output publish
 
 The live integration run must execute the actual S3 Select filter and both
 validations, record measurements, then verify a clean-environment invocation.
-Synthetic tests establish failure behaviour; supplied references establish
-correctness on the challenge data. Neither has been completed for Section 1 yet.
+Use synthetic tests for failure cases and the supplied reference for full-data
+validation.
 
 ## Handoff to Section 2
 
-Section 2 should consume the validated extraction. Keep the CSV header and
-unnamed-column findings available for that design step. Do not infer a join
-failure threshold from matching aggregate counts alone. Check missing-coordinate
-rows, malformed coordinates and unmatched usable coordinates separately, and
-validate assignments row by row against `sr_hex.csv.gz`.
-
-Interview explanation: "I filtered the data at its source, defined the expected
-structure separately from the code, measured conformity, and checked each result
-against an independent reference. Essential errors stop processing even when
-the average quality score looks good."
+Section 2 consumes the validated extraction. Inspect the CSV headers and
+unnamed column before choosing the join policy. Count missing, malformed and
+unmatched locations separately, then validate assignments against `sr_hex.csv.gz`.

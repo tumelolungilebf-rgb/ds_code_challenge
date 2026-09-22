@@ -7,28 +7,28 @@ Tested commit: `4443bdb199db291eb893f6f22e5dedc32a37ebe6`
 
 ## Purpose
 
-This check simulated a reviewer starting without the original virtual
-environment or generated files. The public fork was cloned into a separate
-directory, a new virtual environment was created, the declared package was
-installed, the documented unified command was run, and the test suite was
-executed.
+The public fork was cloned into a new directory and installed in a fresh
+virtual environment. The documented pipeline command and test suite were
+then run.
 
 The clean clone initially contained no `.venv`, `data/processed`, or `outputs`
 directory.
 
 ## Setup correction discovered by the check
 
-The first attempt at commit `fe795bf` used `py -3.12` in the Windows quick
-start. The Codex PowerShell environment did not expose the Windows `py`
-launcher or a Python command on `PATH`, although Python 3.12.14 was installed.
-The README was corrected in commit `4443bdb` to use the common `python` command
-and to explain the `py -3.12` and full executable-path alternatives.
+The first attempt at `fe795bf` found that the documented `py -3.12` command
+was unavailable in the test environment. Python 3.12.14 was installed but
+absent from `PATH`. Commit `4443bdb` updated the README to explain the
+available ways to select Python.
 
 For this environment, the full path to its Python 3.12.14 executable was used
 only to create the clean clone's `.venv`. All subsequent commands used the new
 environment's `.venv\Scripts\python.exe`.
 
 ## Results
+
+These are the initial clean-clone results. The later review passed 34 tests;
+see [final technical review](final_review.md).
 
 | Check | Result |
 | --- | --- |
@@ -54,6 +54,5 @@ identity, H3, shared-field, or row-count mismatches. Its output SHA-256 was:
 2724a0eea1007a5e16fd0a8037a95ffedb76e94735d768b4d4a1fd51635fabd0
 ```
 
-The hashes match the previously recorded live-run hashes. The generated
-environment, data, logs, package metadata and bytecode appeared only as ignored
-files, confirming that the clean run did not alter the tracked source tree.
+Both hashes match the earlier live runs. Generated files remained ignored,
+and the run left no tracked changes.
